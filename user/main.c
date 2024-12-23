@@ -10,75 +10,75 @@
 #include "stm32f10x_exti.h"
 #include "time.h"
 
-// UART ÇÃ·¡±×
-char flagUART1 = 0;   // USART1¿¡¼­ µ¥ÀÌÅÍ ¼ö½Å ½Ã È®ÀÎÇÏ´Â ÇÃ·¡±×
-char flagUART2 = 0;   // USART2¿¡¼­ µ¥ÀÌÅÍ ¼ö½Å ½Ã È®ÀÎÇÏ´Â ÇÃ·¡±×
+// UART í”Œë˜ê·¸
+char flagUART1 = 0;   // USART1ì—ì„œ ë°ì´í„° ìˆ˜ì‹  ì‹œ í™•ì¸í•˜ëŠ” í”Œë˜ê·¸
+char flagUART2 = 0;   // USART2ì—ì„œ ë°ì´í„° ìˆ˜ì‹  ì‹œ í™•ì¸í•˜ëŠ” í”Œë˜ê·¸
 
-char wordFromUART1;   // USART1À¸·Î ¹ŞÀº µ¥ÀÌÅÍ ÀúÀå º¯¼ö
-char wordFromUART2;   // USART2À¸·Î ¹ŞÀº µ¥ÀÌÅÍ ÀúÀå º¯¼ö
+char wordFromUART1;   // USART1ìœ¼ë¡œ ë°›ì€ ë°ì´í„° ì €ì¥ ë³€ìˆ˜
+char wordFromUART2;   // USART2ìœ¼ë¡œ ë°›ì€ ë°ì´í„° ì €ì¥ ë³€ìˆ˜
 
-// ¾Ğ·Â ¼¾¼­ °ü·Ã º¯¼ö
-volatile double pressureValue = 0; // ¾Ğ·Â ¼¾¼­  °ª
-int flag = 0;             // ¾Ğ·Â »óÅÂ ÇÃ·¡±×
-double pressureThreshold1 = 500; // ¾Ğ·Â ÀÓ°è°ª 1 - ½ÇÇèÀ¸·Î °áÁ¤ ÇÊ¿ä
-double pressureThreshold2 = 1000; // ¾Ğ·Â ÀÓ°è°ª 2
-double dist = 0;          // °Å¸® ÃøÁ¤°ª
+// ì••ë ¥ ì„¼ì„œ ê´€ë ¨ ë³€ìˆ˜
+volatile double pressureValue = 0; // ì••ë ¥ ì„¼ì„œ ê°’
+int flag = 0;             // ì••ë ¥ ìƒíƒœ í”Œë˜ê·¸
+double pressureThreshold1 = 500; // ì••ë ¥ ì„ê³„ê°’ 1 - ì‹¤í—˜ìœ¼ë¡œ ê²°ì • í•„ìš”
+double pressureThreshold2 = 1000; // ì••ë ¥ ì„ê³„ê°’ 2
+double dist = 0;          // ê±°ë¦¬ ì¸¡ì •ê°’
 
 
-// ÇÔ¼ö ÇÁ·ÎÅäÅ¸ÀÔ ¼±¾ğ
-void RCC_Configure(void);      // Å¬·° ¼³Á¤
-void GPIO_Configure(void);     // GPIO ¼³Á¤  
-void USART1_Init(void);        // USART1 ÃÊ±âÈ­
-void USART2_Init(void);        // USART2 ÃÊ±âÈ­
-void sendDataUART1(uint16_t data); // USART1À¸·Î µ¥ÀÌÅÍ Àü¼Û
-void sendDataUART2(uint16_t data); // USART2À¸·Î µ¥ÀÌÅÍ Àü¼Û
-void NVIC_Configure(void);     // ÀÎÅÍ·´Æ® ¼³Á¤
-void ADC_Configure(void);      // ADC ¼³Á¤
-void ADC1_2_IRQHandler(void);  // ADC ÀÎÅÍ·´Æ® ÇÚµé·¯
-void USART1_IRQHandler(void);  // USART1 ÀÎÅÍ·´Æ® ÇÚµé·¯
-void USART2_IRQHandler(void);  // USART2 ÀÎÅÍ·´Æ® ÇÚµé·¯
-void InitHCSR04(void);         // ÃÊÀ½ÆÄ ¼¾¼­ ÃÊ±âÈ­
-void setRGBLED(int flag);      // RGB LED Á¦¾î
-void TIM4_Configure(void);     // TIM4 Å¸ÀÌ¸Ó ¼³Á¤
-void moveMotor(uint16_t var); // ¸ğÅÍ Á¦¾î ÇÔ¼ö
+// í•¨ìˆ˜ í”„ë¡œí† íƒ€ì… ì„ ì–¸
+void RCC_Configure(void);      // í´ëŸ­ ì„¤ì •
+void GPIO_Configure(void);     // GPIO ì„¤ì •  
+void USART1_Init(void);        // USART1 ì´ˆê¸°í™”
+void USART2_Init(void);        // USART2 ì´ˆê¸°í™”
+void sendDataUART1(uint16_t data); // USART1ìœ¼ë¡œ ë°ì´í„° ì „ì†¡
+void sendDataUART2(uint16_t data); // USART2ìœ¼ë¡œ ë°ì´í„° ì „ì†¡
+void NVIC_Configure(void);     // ì¸í„°ëŸ½íŠ¸ ì„¤ì •
+void ADC_Configure(void);      // ADC ì„¤ì •
+void ADC1_2_IRQHandler(void);  // ADC ì¸í„°ëŸ½íŠ¸ í•¸ë“¤ëŸ¬
+void USART1_IRQHandler(void);  // USART1 ì¸í„°ëŸ½íŠ¸ í•¸ë“¤ëŸ¬
+void USART2_IRQHandler(void);  // USART2 ì¸í„°ëŸ½íŠ¸ í•¸ë“¤ëŸ¬
+void InitHCSR04(void);         // ì´ˆìŒíŒŒ ì„¼ì„œ ì´ˆê¸°í™”
+void setRGBLED(int flag);      // RGB LED ì œì–´
+void TIM4_Configure(void);     // TIM4 íƒ€ì´ë¨¸ ì„¤ì •
+void moveMotor(uint16_t var); // ëª¨í„° ì œì–´ í•¨ìˆ˜
 
-void open(void);  // ¹® ¿­±â ÇÔ¼ö
-void close(void); // ¹® ´İ±â ÇÔ¼ö
+void open(void);  // ë¬¸ ì—´ê¸° í•¨ìˆ˜
+void close(void); // ë¬¸ ë‹«ê¸° í•¨ìˆ˜
 
-// Å¬·° ¼³Á¤ ÇÔ¼ö
+// í´ëŸ­ ì„¤ì • í•¨ìˆ˜
 void RCC_Configure(void) {
-    // GPIO Æ÷Æ® Å¬·° È°¼ºÈ­
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // Port A È°¼ºÈ­
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE); // Port B È°¼ºÈ­  
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE); // Port C È°¼ºÈ­
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE); // Port D È°¼ºÈ­
+    // GPIO í¬íŠ¸ í´ëŸ­ í™œì„±í™”
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE); // Port A í™œì„±í™”
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE); // Port B í™œì„±í™”  
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE); // Port C í™œì„±í™”
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD, ENABLE); // Port D í™œì„±í™”
     
-    // ADC Å¬·° È°¼ºÈ­
+    // ADC í´ëŸ­ í™œì„±í™”
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC2, ENABLE);
     
-    // USART Å¬·° È°¼ºÈ­
+    // USART í´ëŸ­ í™œì„±í™”
     RCC_APB2PeriphClockCmd(RCC_APB2ENR_USART1EN, ENABLE); // USART1
     RCC_APB1PeriphClockCmd(RCC_APB1ENR_USART2EN, ENABLE); // USART2
     
-    // AFIO Å¬·° È°¼ºÈ­ 
+    // AFIO í´ëŸ­ í™œì„±í™” 
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
     
-    // ¼­º¸¸ğÅÍ TIM3 È°¼ºÈ­
+    // ì„œë³´ëª¨í„° TIM3 í™œì„±í™”
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);  // Timer4 enable
 } 
 
-// GPIO ¼³Á¤ ÇÔ¼ö
+// GPIO ì„¤ì • í•¨ìˆ˜
 void GPIO_Configure(void) {
     GPIO_InitTypeDef GPIO_InitStructure;
     
-    // ¾Ğ·Â ¼¾¼­ 1 (PC0, ADC Ã¤³Î 10)
+    // ì••ë ¥ ì„¼ì„œ 1 (PC0, ADC ì±„ë„ 10)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-    // ¸¶±×³×Æ½ ¼¾¼­ (°íÁ¤µÈ ÂÊ)
+    // ë§ˆê·¸ë„¤í‹± ì„¼ì„œ (ê³ ì •ëœ ìª½)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
@@ -106,33 +106,33 @@ void GPIO_Configure(void) {
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    // RGB LED ÇÉ ¼³Á¤ (GPIOB)
-    // »¡°£»ö (PD2)
+    // RGB LED í•€ ì„¤ì • (GPIOB)
+    // ë¹¨ê°„ìƒ‰ (PD2)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init(GPIOD, &GPIO_InitStructure);
 
-    // ÃÊ·Ï»ö (PB2)
+    // ì´ˆë¡ìƒ‰ (PB2)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-    // ÆÄ¶õ»ö (PC5)
+    // íŒŒë€ìƒ‰ (PC5)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
     
-    // ¼­º¸¸ğÅÍ
+    // ì„œë³´ëª¨í„° (TIM4, channel3 -> PB8)
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
-// USART1 ÃÊ±âÈ­ ÇÔ¼ö
+// USART1 ì´ˆê¸°í™” í•¨ìˆ˜
 void USART1_Init(void)
 {
     USART_InitTypeDef USART1_InitStructure;
@@ -154,7 +154,7 @@ void USART1_Init(void)
 
 }
 
-// USART2 ÃÊ±âÈ­ ÇÔ¼ö
+// USART2 ì´ˆê¸°í™” í•¨ìˆ˜
 void USART2_Init(void)
 {
     USART_InitTypeDef USART2_InitStructure;
@@ -176,7 +176,7 @@ void USART2_Init(void)
     USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
 }
 
-// USART1 ÀÎÅÍ·´Æ® ÇÚµé·¯
+// USART1 ì¸í„°ëŸ½íŠ¸ í•¸ë“¤ëŸ¬
 void USART1_IRQHandler() {
 
     if(USART_GetITStatus(USART1,USART_IT_RXNE)!=RESET){
@@ -188,7 +188,7 @@ void USART1_IRQHandler() {
     }
 }
 
-// USART2 ÀÎÅÍ·´Æ® ÇÚµé·¯
+// USART2 ì¸í„°ëŸ½íŠ¸ í•¸ë“¤ëŸ¬
 void USART2_IRQHandler() {
 
     if(USART_GetITStatus(USART2,USART_IT_RXNE)!=RESET){
@@ -208,36 +208,38 @@ void sendDataUART2(uint16_t data) {
     USART_SendData(USART2, data);
 }
 
-// ÀÎÅÍ·´Æ® ¿ì¼±¼øÀ§ ¼³Á¤: TIM4 > USART > ADC
+// ì¸í„°ëŸ½íŠ¸ ìš°ì„ ìˆœìœ„ ì„¤ì •: TIM4(ì„œë³´ëª¨í„°) > USART2(ë¸”ë£¨íˆ¬ìŠ¤) > USART1(ì‹œë¦¬ì–¼) > ADC(ì••ë ¥ ì„¼ì„œ)
+// ì„œë³´ëª¨í„°ì˜ ìš°ì„  ìˆœìœ„ë¥¼ ê°€ì¥ ë†’ê²Œ ì§€ì •í•˜ì—¬, ë¬¸ì´ ì™„ì „íˆ ì—´ê³  ë‹«íˆëŠ” ê²ƒì„ ìš°ì„ ìœ¼ë¡œ í•œë‹¤.
+// LED í‘œì‹œëŠ” í˜„ì¬ ìƒí™©ì„ ì•Œë ¤ì£¼ê¸°ë§Œ í•˜ëŠ” ìš©ë„ì´ë¯€ë¡œ, ë¬¸ ê°œí ë™ì‘ë³´ë‹¤ í›„ìˆœìœ„ë¼ê³  íŒë‹¨í•˜ì—¬ ìš°ì„  ìˆœìœ„ë¥¼ ê°€ì¥ ë‚®ê²Œ ì§€ì •
 void NVIC_Configure(void) {
     NVIC_InitTypeDef NVIC_InitStructure;
 
-    // NVIC Priority Group ¼³Á¤
+    // NVIC Priority Group ì„¤ì •
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
         
-    // ADC1 ÀÎÅÍ·´Æ®
-    NVIC_EnableIRQ(ADC1_2_IRQn);                  // ADC1_2 ÀÎÅÍ·´Æ® È°¼ºÈ­
+    // ADC1 ì¸í„°ëŸ½íŠ¸
+    NVIC_EnableIRQ(ADC1_2_IRQn);                  // ADC1_2 ì¸í„°ëŸ½íŠ¸ í™œì„±í™”
     NVIC_InitStructure.NVIC_IRQChannel = ADC1_2_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x03;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    // USART1 ÀÎÅÍ·´Æ®
+    // USART1 ì¸í„°ëŸ½íŠ¸
     NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
-    // USART2 ÀÎÅÍ·´Æ®
+    // USART2 ì¸í„°ëŸ½íŠ¸
     NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x01;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
     
-    // TIM4 ÀÎÅÍ·´Æ®
+    // TIM4 ì¸í„°ëŸ½íŠ¸
     NVIC_InitStructure.NVIC_IRQChannel = TIM4_IRQn;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;
@@ -246,7 +248,7 @@ void NVIC_Configure(void) {
 
 }
 
-// ADC ¼³Á¤ ÇÔ¼ö
+// ADC ì„¤ì • í•¨ìˆ˜
 void ADC_Configure(void) {
     ADC_DeInit(ADC1);
     ADC_InitTypeDef ADC_InitStructure;
@@ -259,14 +261,14 @@ void ADC_Configure(void) {
     ADC_InitStructure.ADC_NbrOfChannel = 1;
     ADC_Init(ADC1, &ADC_InitStructure);
     
-    // ¾Ğ·Â¼¾¼­ 1,2 Ã¤³Î ¼³Á¤
+    // ì••ë ¥ì„¼ì„œ ì±„ë„ ì„¤ì •
     ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_239Cycles5);
     //ADC_RegularChannelConfig(ADC1, ADC_Channel_11, 2, ADC_SampleTime_239Cycles5);
     
     ADC_ITConfig(ADC1, ADC_IT_EOC, ENABLE);
     ADC_Cmd(ADC1, ENABLE);
     
-    // ADC º¸Á¤
+    // ADC ë³´ì •
     ADC_ResetCalibration(ADC1);
     while(ADC_GetResetCalibrationStatus(ADC1));
     
@@ -276,18 +278,18 @@ void ADC_Configure(void) {
     ADC_SoftwareStartConvCmd(ADC1, ENABLE);
 }
 
-// ADC º¯È¯ ¿Ï·á ÀÎÅÍ·´Æ® ÇÚµé·¯
+// ADC ë³€í™˜ ì™„ë£Œ ì¸í„°ëŸ½íŠ¸ í•¸ë“¤ëŸ¬
 void ADC1_2_IRQHandler(void) {
     if (ADC_GetITStatus(ADC1, ADC_IT_EOC) != RESET) {
-        // ADC º¯È¯ °ª ÀĞ±â
+        // ADC ë³€í™˜ ê°’ ì½ê¸°
         pressureValue = ADC_GetConversionValue(ADC1);
 
-        // ÀÎÅÍ·´Æ® ÇÃ·¡±× Å¬¸®¾î
+        // ì¸í„°ëŸ½íŠ¸ í”Œë˜ê·¸ í´ë¦¬ì–´
         ADC_ClearITPendingBit(ADC1, ADC_IT_EOC);
     }
 }
 
-// TIM4 Å¸ÀÌ¸Ó ÃÊ±âÈ­ ÇÔ¼ö (PWM »ı¼º)
+// TIM4 íƒ€ì´ë¨¸ ì´ˆê¸°í™” í•¨ìˆ˜ (PWM ìƒì„±)
 void TIM4_Configure(void)
 {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
@@ -303,7 +305,7 @@ void TIM4_Configure(void)
     TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
     TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
     TIM_OCInitStructure.TIM_Pulse = 1500;   // us
-    TIM_OC3Init(TIM4, &TIM_OCInitStructure);
+    TIM_OC3Init(TIM4, &TIM_OCInitStructure);  // ì±„ë„ 3ë²ˆ ì§€ì •
     
     TIM_TimeBaseInit(TIM4, &TIM_TimeBaseStructure);
     TIM_OC3PreloadConfig(TIM4, TIM_OCPreload_Disable);
@@ -311,86 +313,84 @@ void TIM4_Configure(void)
     TIM_Cmd(TIM4, ENABLE);
 }
 
-// ¸ğÅÍ È¸Àü ÇÔ¼ö (PWM Á¦¾î)
+// ëª¨í„° íšŒì „ í•¨ìˆ˜ (PWM ì œì–´)
 void moveMotor(uint16_t var)
 {
     TIM_OCInitTypeDef TIM_OCInitStructure;
     TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
     TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
     TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-    TIM_OCInitStructure.TIM_Pulse = var;
-    TIM_OC3Init(TIM4, &TIM_OCInitStructure);
+    TIM_OCInitStructure.TIM_Pulse = var;  // ì¸ìë¡œ ì „ë‹¬ ë°›ì€ ê°’ì— ë”°ë¼ íšŒì „ ë°©í–¥ ê²°ì •
+    TIM_OC3Init(TIM4, &TIM_OCInitStructure);  // TIM4, channel3
 }
 
-// ¸¶±×³×Æ½ ¼¾¼­·Î ¹® ´İÈû °¨Áö
+// ë§ˆê·¸ë„¤í‹± ì„¼ì„œë¡œ ë¬¸ ë‹«í˜ ê°ì§€
 int isOpen(void) {
     if(~GPIOD->IDR & GPIO_Pin_12) {
-        return 0; // ¹®ÀÌ ´İÇû´Ù°í Ç¥½Ã
+        return 0; // ë¬¸ì´ ë‹«í˜”ë‹¤ê³  í‘œì‹œ
     }
     else {
-        return 1; // ¹®ÀÌ ¿­·Á ÀÖ´Ù°í Ç¥½Ã
+        return 1; // ë¬¸ì´ ì—´ë ¤ ìˆë‹¤ê³  í‘œì‹œ
     }
 }
 
-// ÃÊÀ½ÆÄ ¼¾¼­·Î »ç¶÷ °¨Áö
+// ì´ˆìŒíŒŒ ì„¼ì„œë¡œ ì‚¬ëŒ ê°ì§€
 int detectPerson(void) {
-  if(isOpen() == 1) { // ¹®ÀÌ ¿­·Á ÀÖÀ» ¶§¸¸ °¨Áö (Áï, ¸¶±×³×Æ½ °ªÀÌ ÃÊÀ½ÆÄ ÀÌ¿ëÀ» È£Ãâ)
-      int distanceThr = 150;  // °¨Áö °Å¸® ÀÓ°è°ª
-      dist = HCSR04GetDistance(); // ÃÊÀ½ÆÄ ¼¾¼­¸¦ ÅëÇÑ °Å¸® ÃøÁ¤
+  if(isOpen() == 1) { // ë¬¸ì´ ì—´ë ¤ ìˆì„ ë•Œë§Œ ê°ì§€ (ì¦‰, ë§ˆê·¸ë„¤í‹± ê°’ì´ ì´ˆìŒíŒŒ ì´ìš©ì„ í˜¸ì¶œ)
+      int distanceThr = 150;  // ê°ì§€ ê±°ë¦¬ ì„ê³„ê°’
+      dist = HCSR04GetDistance(); // ì´ˆìŒíŒŒ ì„¼ì„œë¥¼ í†µí•œ ê±°ë¦¬ ì¸¡ì •
       if(distanceThr > dist) {
-          return 1;  // »ç¶÷ °¨ÁöµÊ
+          return 1;  // ì‚¬ëŒ ê°ì§€ë¨
       }
       else {
-          return 0;  // »ç¶÷ ¾øÀ½
+          return 0;  // ì‚¬ëŒ ì—†ìŒ
       }
     }
 }
 
-// ¹® ¿­±â µ¿ÀÛ
-void open() {//¹® ¿©´Â ÇÔ¼ö
-    if (isOpen() == 0) { //¹®ÀÌ ´İÇô ÀÖÀ» ¶§¸¸ ¸ğÅÍ µ¿ÀÛ
-        moveMotor(1000);  // ¸ğÅÍ È¸Àü
-        for(int i=0; i < 23000000; i++) {}  // µô·¹ÀÌ´Â ½ÇÇèÀûÀ¸·Î ÁöÁ¤
+// ë¬¸ ì—´ê¸° ë™ì‘
+void open() {
+    if (isOpen() == 0) { // ë¬¸ì´ ë‹«í˜€ ìˆì„ ë•Œë§Œ ëª¨í„° ë™ì‘
+        moveMotor(1000);  // ëª¨í„° íšŒì „(ë¬¸ì„ ì—¬ëŠ” ë°©í–¥)
+        for(int i=0; i < 23000000; i++) {}  // ë”œë ˆì´ëŠ” ì‹¤í—˜ì ìœ¼ë¡œ ì§€ì •
     }
-    moveMotor(1500); //¸ğÅÍ Á¤Áö
+    moveMotor(1500); // ëª¨í„° ì •ì§€
 }
 
+// ë¬¸ ë‹«ê¸° ë™ì‘
 void close() {
-    if (isOpen() == 1 && !detectPerson()) { // ¹®ÀÌ ¿­·Á ÀÖ°í(detectPerson()¿¡¼­ È®ÀÎ) »ç¶÷ÀÌ ¾øÀ» ¶§¸¸ ¸ğÅÍ µ¿ÀÛ
-        moveMotor(2000);  // ¸ğÅÍ È¸Àü
-        for(int i=0; i < 23000000; i++) {}  // µô·¹ÀÌ´Â ½ÇÇèÀûÀ¸·Î ÁöÁ¤
+    if (isOpen() == 1 && !detectPerson()) { // ë¬¸ì´ ì—´ë ¤ ìˆê³ (detectPerson()ì—ì„œ í™•ì¸) ì‚¬ëŒì´ ì—†ì„ ë•Œë§Œ ëª¨í„° ë™ì‘
+        moveMotor(2000);  // ëª¨í„° íšŒì „(ë¬¸ì„ ë‹«ëŠ” ë°©í–¥)
+        for(int i=0; i < 23000000; i++) {}  // ë”œë ˆì´ëŠ” ì‹¤í—˜ì ìœ¼ë¡œ ì§€ì •
     }
-    //¸ğÅÍ off
-    moveMotor(1500);
+    moveMotor(1500);  // ëª¨í„° ì •ì§€
  }
 
+// LED ìƒ‰ê¹” ì§€ì •
 void setRGBLED(int flag) {
     switch (flag) {
-    case 1: // ÃÊ·Ï»ö
-        GPIOD->ODR |= (GPIO_Pin_2);  // »¡°£»ö ²û
-        GPIOB->ODR &= ~(GPIO_Pin_2);   // ÃÊ·Ï»ö ÄÔ
-        GPIOC->ODR |= (GPIO_Pin_5);  // ÆÄ¶õ»ö ²û
+    case 1: // ì´ˆë¡ìƒ‰
+        GPIOD->ODR |= (GPIO_Pin_2);  // ë¹¨ê°„ìƒ‰ ë”
+        GPIOB->ODR &= ~(GPIO_Pin_2);   // ì´ˆë¡ìƒ‰ ì¼¬
+        GPIOC->ODR |= (GPIO_Pin_5);  // íŒŒë€ìƒ‰ ë”
         break;
-    case 2: // ³ë¶õ»ö (»¡°£ + ÃÊ·Ï)
-        GPIOD->ODR &= ~(GPIO_Pin_2);  // »¡°£»ö ÄÔ
-        GPIOB->ODR &= ~(GPIO_Pin_2);  // ÃÊ·Ï»ö ÄÔ
-        GPIOC->ODR |= (GPIO_Pin_5);  // ÆÄ¶õ»ö ²û
+    case 2: // ë…¸ë€ìƒ‰ (ë¹¨ê°„ + ì´ˆë¡)
+        GPIOD->ODR &= ~(GPIO_Pin_2);  // ë¹¨ê°„ìƒ‰ ì¼¬
+        GPIOB->ODR &= ~(GPIO_Pin_2);  // ì´ˆë¡ìƒ‰ ì¼¬
+        GPIOC->ODR |= (GPIO_Pin_5);  // íŒŒë€ìƒ‰ ë”
         break;
-    case 3: // »¡°£»ö
-        GPIOD->ODR &= ~(GPIO_Pin_2);  // »¡°£»ö ÄÔ
-        GPIOB->ODR |= (GPIO_Pin_2);  // ÃÊ·Ï»ö ²û
-        GPIOC->ODR |= (GPIO_Pin_5);  // ÆÄ¶õ»ö ²û
+    case 3: // ë¹¨ê°„ìƒ‰
+        GPIOD->ODR &= ~(GPIO_Pin_2);  // ë¹¨ê°„ìƒ‰ ì¼¬
+        GPIOB->ODR |= (GPIO_Pin_2);  // ì´ˆë¡ìƒ‰ ë”
+        GPIOC->ODR |= (GPIO_Pin_5);  // íŒŒë€ìƒ‰ ë”
         break;
-    default: // ÇÏ¾á»ö (»¡°£, ÃÊ·Ï, ÆÄ¶õ»ö ¸ğµÎ ÄÔ)
+    default: // í•˜ì–€ìƒ‰ (ë¹¨ê°„, ì´ˆë¡, íŒŒë€ìƒ‰ ëª¨ë‘ ì¼¬)
       GPIOD->ODR |= GPIO_Pin_2;
         GPIOB->ODR |= GPIO_Pin_2;
         GPIOC->ODR |= GPIO_Pin_5;
         break;
 }
 }
-
-
-volatile uint16_t pressure_value = 0;
 
 int main(void) {
     SystemInit();
@@ -403,43 +403,40 @@ int main(void) {
     InitHCSR04();
     TIM4_Configure();
 
-    setRGBLED(flag);
+    setRGBLED(flag);  // LED ì´ˆê¸° ìƒ‰ê¹” ì§€ì •
     
     while (1) {
-        if (flagUART1 == 1){
+        // USART ì „ì†¡
+        if (flagUART1 == 1){  // ì‹œë¦¬ì–¼ í†µì‹ 
             sendDataUART2(wordFromUART1);
             flagUART1 = 0;
         }
-        else if (flagUART2 == 1){
+        else if (flagUART2 == 1){  // ë¸”ë£¨íˆ¬ìŠ¤ í†µì‹ 
             sendDataUART1(wordFromUART2);
             flagUART2 = 0;
 
-            // 'o'¸¦ ¹ŞÀ¸¸é ¹® ¿­±â
+            // 'o'ë¥¼ ë°›ìœ¼ë©´ ë¬¸ ì—´ê¸°
             if(wordFromUART2 == 'o') {
                 open();
             }
-            // 'c'¸¦ ¹ŞÀ¸¸é ¹® ´İ±â
+            // 'c'ë¥¼ ë°›ìœ¼ë©´ ë¬¸ ë‹«ê¸°
             else if(wordFromUART2 == 'c') {
                 close();
             }
-            else if(wordFromUART2 == 's') {
-                moveMotor(1500);
-            }
-
         }
         
-        // ¾Ğ·Â ¼¾¼­°ª¿¡ µû¸¥ »óÅÂ ¼³Á¤
+        // ì••ë ¥ ì„¼ì„œê°’ì— ë”°ë¥¸ ìƒíƒœ ì„¤ì •
         if(pressureValue < pressureThreshold1) {
-            flag = 1;
+            flag = 1;  // ì´ˆë¡ìƒ‰
         }
         else if(pressureValue < pressureThreshold2) {
-            flag = 2;
+            flag = 2;  // ë…¸ë€ìƒ‰
         }
         else {
-            flag = 3;
+            flag = 3;  // ë¹¨ê°„ìƒ‰
         }
         
-        setRGBLED(flag);
+        setRGBLED(flag);  // LEDì˜ ìƒ‰ê¹”ì„ ì—…ë°ì´íŠ¸
         
     }
      return 0;
